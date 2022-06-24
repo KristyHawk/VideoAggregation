@@ -3,10 +3,11 @@ package com.video.testtask.video_data_aggregation.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.video.testtask.video_data_aggregation.entity.*;
+import com.video.testtask.video_data_aggregation.dto.*;
 import com.video.testtask.video_data_aggregation.handlers.error.ExceptionMessages;
 import com.video.testtask.video_data_aggregation.handlers.error.InvalidRequestJsonException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayOutputStream;
@@ -16,20 +17,22 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Component
-public class ProcessingService {
+public class ProcessingService implements ProcessingApi {
 
     private static final Logger logger = Logger.getLogger(ProcessingService.class.getName());
     private static final String STARTING_PROCESSING_MESSAGE = "Start processing...";
+    private static final String FORMING_RESULTS = "Forming results...";
 
-    private final WebClientService webClientService;
+    private final WebClientApi<String> webClientApi;
     private final ObjectMapper objectMapper;
 
     private ConcurrentLinkedQueue<CameraElement> cameraElementsQueue;
     private ConcurrentLinkedQueue<ProcessedCameraElement> processedCameraElements;
 
     @Autowired
-    public ProcessingService(WebClientService webClientService, ObjectMapper objectMapper) {
-        this.webClientService = webClientService;
+    public ProcessingService(@Qualifier("webClientJsonResponseService") WebClientApi<String> webClientApi,
+                             ObjectMapper objectMapper) {
+        this.webClientApi = webClientApi;
         this.objectMapper = objectMapper;
         processedCameraElements = new ConcurrentLinkedQueue<>();
     }
@@ -40,10 +43,12 @@ public class ProcessingService {
      * @param camerasInfo - camerasInfo as json
      * @return aggregated info about all the cameras from camerasInfo
      */
+    @Override
     public String processCameraList(String camerasInfo) throws InvalidRequestJsonException, IOException, InterruptedException {
         logger.info(STARTING_PROCESSING_MESSAGE);
         formInitialQueue(camerasInfo);
         runProcessing();
+        logger.info(FORMING_RESULTS);
 
         return formResult();
     }
@@ -109,8 +114,8 @@ public class ProcessingService {
                 final String sourceDataUrl = element.getSourceDataUrl();
                 final String tokenDataUrl = element.getTokenDataUrl();
 
-                String sourceDataAsJson = webClientService.getJsonResponse(sourceDataUrl);
-                String tokenDataAsJson = webClientService.getJsonResponse(tokenDataUrl);
+                String sourceDataAsJson = webClientApi.getResponse(sourceDataUrl).getBody();
+                String tokenDataAsJson = webClientApi.getResponse(tokenDataUrl).getBody();
 
                 SourceData sourceData;
                 TokenData tokenData;

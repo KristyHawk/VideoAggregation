@@ -1,4 +1,4 @@
-package com.video.testtask.video_data_aggregation.entity;
+package com.video.testtask.video_data_aggregation.dto;
 
 public class TokenData {
 

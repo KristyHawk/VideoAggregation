@@ -2,7 +2,7 @@ package com.video.testtask.video_data_aggregation.controller;
 
 import com.video.testtask.video_data_aggregation.handlers.error.InvalidRequestJsonException;
 import com.video.testtask.video_data_aggregation.helper.RequestHelper;
-import com.video.testtask.video_data_aggregation.service.ProcessingService;
+import com.video.testtask.video_data_aggregation.service.ProcessingApi;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,10 +21,10 @@ import java.io.IOException;
 @RequestMapping("/api")
 public class VideoAggregationController {
 
-    private final ProcessingService processingService;
+    private final ProcessingApi processingService;
 
     @Autowired
-    public VideoAggregationController(ProcessingService processingService) {
+    public VideoAggregationController(ProcessingApi processingService) {
         this.processingService = processingService;
     }
 
